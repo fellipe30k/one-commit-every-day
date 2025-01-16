@@ -1,0 +1,27 @@
+# docker-compose.yml
+version: '3.8'
+
+services:
+  app:
+    build: .
+    container_name: um-commit-app
+    depends_on:
+      - ollama
+    volumes:
+      - .:/app
+    environment:
+      - OLLAMA_URL=http://ollama:11435
+    command: ["/usr/local/bin/one-commit-every-day"]
+
+  ollama:
+    image: ollama/ollama:latest
+    container_name: ollama
+    ports:
+      - "11435:11435"
+    command: ["ollama", "serve"]
+    volumes:
+      - ollama-data:/data
+    entrypoint: ["sh", "-c", "ollama serve && ollama pull llama3.2:1b"]
+
+volumes:
+  ollama-data:
