@@ -1,11 +1,14 @@
 # Makefile
 default: up
 
+build:
+	docker-compose build
+
 up:
-	docker-compose up --build
+	docker-compose up
 
 down:
 	docker-compose down
 
 test:
-	docker-compose run --rm app sh -c "go run main.go && git log --oneline"
+	docker-compose run --rm app sh -c "go mod tidy && go run main.go test && git log --oneline"
