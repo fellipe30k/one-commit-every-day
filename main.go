@@ -19,8 +19,8 @@ const (
 	ollamaURL = "http://ollama:11434/api/generate"
 	outputDir = "generated_files"
 	promptOllama = "I'm going to write a simple readme.md that explains how to write a simple hello world in Python:"
-  cronSchedule = "0 8 * * *"
-  fileExtension = "md"
+	cronSchedule = "0 8 * * *"
+	fileExtension = "md"
 )
 
 // generateMessage communicates with Ollama and parses JSON lines (streaming response).
@@ -159,7 +159,7 @@ func testApp() {
 		return
 	}
 
-	filename := filepath.Join(outputDir, fmt.Sprintf("test_message_%s.md", time.Now().Format("20060102T150405")))
+	filename := filepath.Join(outputDir, fmt.Sprintf("test_message_%s.%s", time.Now().Format("20060102T150405"), fileExtension))
 	err = os.WriteFile(filename, []byte(message), 0644)
 	if err != nil {
 		fmt.Println("Test failed: unable to write file.")
