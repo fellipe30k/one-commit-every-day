@@ -1,1 +1,0 @@
-You're running some kind of Python code. What's it doing? Is this part of a larger program or something you just want to run as a standalone script? I can help with that if you'd like.
