@@ -16,10 +16,10 @@ import (
 )
 
 const (
-	ollamaURL = "http://ollama:11434/api/generate"
-	outputDir = "generated_files"
-	promptOllama = "I'm going to write a simple readme.md that explains how to write a simple hello world in Python:"
-	cronSchedule = "0 8 * * *"
+	ollamaURL     = "http://ollama:11434/api/generate"
+	outputDir     = "generated_files"
+	promptOllama  = "I'm going to write a simple readme.md that explains how to write a simple read CSV in Python:"
+	cronSchedule  = "0 10 * * 1-5" // At 10:00 AM, Monday to Friday
 	fileExtension = "md"
 )
 
