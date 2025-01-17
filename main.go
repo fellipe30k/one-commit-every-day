@@ -18,13 +18,16 @@ import (
 const (
 	ollamaURL = "http://ollama:11434/api/generate"
 	outputDir = "generated_files"
+	promptOllama = "I'm going to write a simple readme.md that explains how to write a simple hello world in Python:"
+  cronSchedule = "0 8 * * *"
+  fileExtension = "md"
 )
 
 // generateMessage communicates with Ollama and parses JSON lines (streaming response).
 func generateMessage() string {
 	payload := map[string]interface{}{
 		"model":  "llama3.2:1b",
-		"prompt": "I'm going to write a simple readme.md that explains how to write a simple hello world in Python:",
+		"prompt": promptOllama,
 	}
 
 	jsonData, err := json.Marshal(payload)
@@ -80,7 +83,7 @@ func commitFile(filename, message string) {
 
 	shortMessage := message
 	if len(message) > 50 {
-		shortMessage = message[:50] + "..."
+		shortMessage = message[:150] + "..."
 	}
 
 	commitMessage := fmt.Sprintf("✨ %s", shortMessage)
@@ -90,8 +93,13 @@ func commitFile(filename, message string) {
 		return
 	}
 	fmt.Println("File committed with message:", commitMessage)
-
-	exec.Command("git", "push")
+	
+	cmd = exec.Command("git", "push")
+	if err := cmd.Run(); err != nil {
+		fmt.Println("Error pushing file:", err)
+		return
+	}
+	fmt.Println("File pushed:")
 }
 
 // generateAndCommitMessage generates a message, saves it to a file, and commits it.
@@ -109,7 +117,7 @@ func generateAndCommitMessage() {
 		return
 	}
 
-	filename := filepath.Join(outputDir, fmt.Sprintf("message_%s.md", time.Now().Format("20060102T150405")))
+	filename := filepath.Join(outputDir, fmt.Sprintf("message_%s.%s", time.Now().Format("20060102T150405"),fileExtension))
 	err = os.WriteFile(filename, []byte(message), 0644)
 	if err != nil {
 		fmt.Println("Error writing file:", err)
@@ -122,7 +130,7 @@ func generateAndCommitMessage() {
 // startCron initializes the cron scheduler.
 func startCron() {
 	c := cron.New()
-	_, err := c.AddFunc("0 8 * * *", generateAndCommitMessage)
+	_, err := c.AddFunc(cronSchedule, generateAndCommitMessage)
 	if err != nil {
 		fmt.Println("Error scheduling cron job:", err)
 		return
