@@ -72,7 +72,7 @@ func generateMessage() string {
 
 // commitFile adds and commits a file to the Git repository.
 func commitFile(filename, message string) {
-	cmd := exec.Command("git", "add", filename)
+	cmd := exec.Command("git", "add", "./generated_files/", filename)
 	if err := cmd.Run(); err != nil {
 		fmt.Println("Error adding file to git:", err)
 		return
@@ -90,6 +90,8 @@ func commitFile(filename, message string) {
 		return
 	}
 	fmt.Println("File committed with message:", commitMessage)
+
+	exec.Command("git", "push")
 }
 
 // generateAndCommitMessage generates a message, saves it to a file, and commits it.
