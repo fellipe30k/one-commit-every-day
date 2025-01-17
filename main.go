@@ -9,18 +9,22 @@ import (
 	"net/http"
 	"os"
 	"os/exec"
+	"path/filepath"
 	"time"
 
 	"github.com/robfig/cron/v3"
 )
 
-const ollamaURL = "http://ollama:11434/api/generate"
+const (
+	ollamaURL = "http://ollama:11434/api/generate"
+	outputDir = "generated_files"
+)
 
 // generateMessage communicates with Ollama and parses JSON lines (streaming response).
 func generateMessage() string {
 	payload := map[string]interface{}{
 		"model":  "llama3.2:1b",
-		"prompt": "I'm going to write a simple readme.md that how write a simple hello word in python:",
+		"prompt": "I'm going to write a simple readme.md that explains how to write a simple hello world in Python:",
 	}
 
 	jsonData, err := json.Marshal(payload)
@@ -36,7 +40,6 @@ func generateMessage() string {
 	}
 	defer resp.Body.Close()
 
-	// Process the streaming response
 	var fullMessage string
 	reader := bufio.NewReader(resp.Body)
 	for {
@@ -49,19 +52,16 @@ func generateMessage() string {
 			return ""
 		}
 
-		// Parse each JSON line
 		var response map[string]interface{}
 		if err := json.Unmarshal(line, &response); err != nil {
 			fmt.Println("Error unmarshaling line:", string(line), err)
 			continue
 		}
 
-		// Append the "response" field to the full message
 		if part, ok := response["response"].(string); ok {
 			fullMessage += part
 		}
 
-		// Stop if "done" is true
 		if done, ok := response["done"].(bool); ok && done {
 			break
 		}
@@ -78,7 +78,12 @@ func commitFile(filename, message string) {
 		return
 	}
 
-	commitMessage := fmt.Sprintf("✨ %s", message)
+	shortMessage := message
+	if len(message) > 50 {
+		shortMessage = message[:50] + "..."
+	}
+
+	commitMessage := fmt.Sprintf("✨ %s", shortMessage)
 	cmd = exec.Command("git", "commit", "-m", commitMessage)
 	if err := cmd.Run(); err != nil {
 		fmt.Println("Error committing file:", err)
@@ -95,8 +100,15 @@ func generateAndCommitMessage() {
 		return
 	}
 
-	filename := fmt.Sprintf("message_%s.md", time.Now().Format("20060102T150405"))
-	err := os.WriteFile(filename, []byte(message), 0644)
+	// Create output directory if it doesn't exist
+	err := os.MkdirAll(outputDir, 0755)
+	if err != nil {
+		fmt.Println("Error creating output directory:", err)
+		return
+	}
+
+	filename := filepath.Join(outputDir, fmt.Sprintf("message_%s.md", time.Now().Format("20060102T150405")))
+	err = os.WriteFile(filename, []byte(message), 0644)
 	if err != nil {
 		fmt.Println("Error writing file:", err)
 		return
@@ -130,8 +142,15 @@ func testApp() {
 	}
 	fmt.Println("Message generated:", message)
 
-	filename := fmt.Sprintf("test_message_%s.md", time.Now().Format("20060102T150405"))
-	err := os.WriteFile(filename, []byte(message), 0644)
+	// Create output directory if it doesn't exist
+	err := os.MkdirAll(outputDir, 0755)
+	if err != nil {
+		fmt.Println("Test failed: unable to create output directory.")
+		return
+	}
+
+	filename := filepath.Join(outputDir, fmt.Sprintf("test_message_%s.md", time.Now().Format("20060102T150405")))
+	err = os.WriteFile(filename, []byte(message), 0644)
 	if err != nil {
 		fmt.Println("Test failed: unable to write file.")
 		return

@@ -2,7 +2,7 @@
 default: up
 
 build:
-	docker-compose build
+	cp ~/.ssh/id_rsa.pub . && docker-compose build && rm id_rsa.pub
 
 up:
 	docker-compose up
